@@ -38,8 +38,8 @@ app.get("/api/hello", function (req, res) {
 });
 
 
-app.post("", function () {
-  
+app.post("/api/shorturl/new", function (req, res) {
+  res.json({"url":);
 });
 
 
