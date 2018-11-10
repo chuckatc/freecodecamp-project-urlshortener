@@ -4,7 +4,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-var autoIncrement = require('mongoose-auto-increment');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 var cors = require('cors');
 
@@ -23,14 +23,12 @@ db.once('open', function() {
   console.log('Notice: db connected!');
 });
 
-autoIncrement.initialize(mongoose.connection);
 
 
 var Schema = mongoose.Schema;
 var UrlSchema = new Schema({
   original_url: String
 });
-UrlSchema.plugin(autoIncrement.plugin, 'Url');
 var Url = mongoose.model('Url', UrlSchema);
 
 
