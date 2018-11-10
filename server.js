@@ -31,7 +31,7 @@ var CounterSchema = Schema({
     _id: {type: String, required: true},
     seq: { type: Number, default: 0 }
 });
-var counter = mongoose.model('counter', CounterSchema);
+var Counter = mongoose.model('Counter', CounterSchema);
 
 var UrlSchema = new Schema({
   original_url: String,
@@ -40,7 +40,7 @@ var UrlSchema = new Schema({
 
 UrlSchema.pre('save', function(next) {
     var doc = this;
-    counter.findByIdAndUpdate({_id: 'urlId'}, {$inc: { seq: 1} }, function(error, counter)   {
+    Counter.findByIdAndUpdate({_id: 'urlId'}, {$inc: { seq: 1} }, {upsert: true}, function(error, counter)   {
         if(error)
             return next(error);
         doc.testvalue = counter.seq;
@@ -79,7 +79,12 @@ app.post("/api/shorturl/new", function (req, res, next) {
     console.log(data);
   });
   */
-  var 
+  var url = new Url({original_url: originalUrl});
+  url.save(function(err, data) {
+    if (err) return next(err);
+    //return next(null, data);
+    console.log(data);
+  });
   
   
   var shortUrl = 1;
