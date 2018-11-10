@@ -25,9 +25,27 @@ db.once('open', function() {
 
 var Schema = mongoose.Schema;
 
+// Reference: Auto-increment counter from
+// https://stackoverflow.com/questions/28357965/mongoose-auto-increment#30164636
+var CounterSchema = Schema({
+    _id: {type: String, required: true},
+    seq: { type: Number, default: 0 }
+});
+var counter = mongoose.model('counter', CounterSchema);
+
 var UrlSchema = new Schema({
   original_url: String,
-  short_url: { type: Number, default: 0 }
+  short_url: Number
+});
+
+UrlSchema.pre('save', function(next) {
+    var doc = this;
+    counter.findByIdAndUpdate({_id: 'urlId'}, {$inc: { seq: 1} }, function(error, counter)   {
+        if(error)
+            return next(error);
+        doc.testvalue = counter.seq;
+        next();
+    });
 });
 
 
@@ -53,13 +71,15 @@ app.post("/api/shorturl/new", function (req, res, next) {
   // Validate provided URL
   // TODO
   
-  
+  /*
   // Upsert URL
   var query = {"original_url": originalUrl};
   Url.findOneAndUpdate(query, query, {upsert: true, new: true}, function(err, data) {
     if (err) next(err);
     console.log(data);
   });
+  */
+  var 
   
   
   var shortUrl = 1;
