@@ -57,7 +57,11 @@ app.post("/api/shorturl/new", function (req, res, next) {
   // TODO
   
   // Upsert URL
-  
+  var query = {"original_url": originalUrl};
+  Url.findOneAndUpdate(query, query, {upsert: true}, function(err, data) {
+    if (err) next(err);
+    console.log(data);
+  });
   
   var shortUrl = 1;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
