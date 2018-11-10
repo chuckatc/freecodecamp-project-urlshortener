@@ -4,7 +4,6 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 var cors = require('cors');
 
@@ -51,9 +50,10 @@ app.post("/api/shorturl/new", function (req, res, next) {
   // Validate provided URL
   // TODO
   
+  
   // Upsert URL
   var query = {"original_url": originalUrl};
-  Url.findOneAndUpdate(query, query, {upsert: true}, function(err, data) {
+  Url.findOneAndUpdate(query, new Url(query), {upsert: true}, function(err, data) {
     if (err) next(err);
     console.log(data);
     //console.log(Url.nextCount());
