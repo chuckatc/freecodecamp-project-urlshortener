@@ -28,7 +28,7 @@ autoIncrement.initialize(mongoose.connection);
 
 var Schema = mongoose.Schema;
 var UrlSchema = new Schema({
-  original_url: {type: String, required: true}
+  original_url: String
 });
 UrlSchema.plugin(autoIncrement.plugin, 'Url');
 var Url = mongoose.model('Url', UrlSchema);
