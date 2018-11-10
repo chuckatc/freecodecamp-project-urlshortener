@@ -50,13 +50,8 @@ UrlSchema.pre('save', function(next) {
 
 var Url = mongoose.model('Url', UrlSchema);
 
-Counter.count({_id: }, function(err, count) {
-  if (count < 1)
-  var counter = new Counter({_id: 'urlId'});
-  counter.save(function(err, data) {
-    if (err) next(err); 
-  });
-}
+
+
 
 app.use(cors());
 
@@ -73,6 +68,8 @@ app.get('/', function(req, res){
 // Short URL creation
 app.post("/api/shorturl/new", function (req, res, next) {
   var originalUrl = req.body.url;
+  
+
   
   // Validate provided URL
   // TODO
