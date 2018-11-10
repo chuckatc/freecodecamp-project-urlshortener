@@ -69,9 +69,13 @@ app.get('/', function(req, res){
 // Short URL creation
 app.post("/api/shorturl/new", function (req, res, next) {
   var originalUrl = req.body.url;
+  var query = {original_url: originalUrl};
   
-  // Is URL already there
-  
+  // If URL has already been created, return it
+  Url.findOne(query, function(err, data) {
+    if (err) next(err);
+    console.log(data);
+  });
 
   
   // Validate provided URL
@@ -88,12 +92,12 @@ app.post("/api/shorturl/new", function (req, res, next) {
       }
     }
     //return next(null, data);
-    console.log(data);
+    //console.log(data);
   });
   
   
   
-  var shortUrl = 1;
+  var shortUrl = 100;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
 });
 
