@@ -51,7 +51,10 @@ UrlSchema.pre('save', function(next) {
 var Url = mongoose.model('Url', UrlSchema);
 
 if (Counter.estimatedDocumentCount() === 0) {
-  
+  var counter = new Counter({_id: 'urlId'});
+  counter.save(function(err, data) {
+    if (err) return done(err); 
+  });
 }
 
 app.use(cors());
