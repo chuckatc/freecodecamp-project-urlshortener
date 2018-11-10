@@ -83,7 +83,14 @@ app.post("/api/shorturl/new", function (req, res, next) {
   
   var url = new Url({original_url: originalUrl});
   url.save(function(err, data) {
-    if (err) return next(err);
+    if (err) {
+      if (err.message.startsWith('E11000 duplicate key error')) {
+        console.log("URL already in collection");
+      } else {
+        console.log(err);
+        return next(err);
+      }
+    }
     //return next(null, data);
     console.log(data);
   });
