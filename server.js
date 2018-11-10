@@ -31,7 +31,8 @@ var Schema = mongoose.Schema;
 
 // URL schema and model
 var urlSchema = new Schema({
-  original_url: {type: String, unique: true}
+  //original_url: {type: String, unique: true}
+  original_url: String
 });
 urlSchema.plugin(autoIncrement.plugin, 'Url');
 var Url = mongoose.model('Url', urlSchema);
@@ -61,6 +62,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
   Url.findOneAndUpdate(query, query, {upsert: true}, function(err, data) {
     if (err) next(err);
     console.log(data);
+    //console.log(Url.nextCount());
   });
   
   var shortUrl = 1;
