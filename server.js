@@ -43,13 +43,13 @@ app.get('/', function(req, res){
 
 
 // Short URL creation
-app.post("/api/shorturl/new", function (req, res) {
+app.post("/api/shorturl/new", function (req, res, next) {
   var originalUrl = req.body.url;
   
   // Validate provided URL
   // TODO
   
-  // 
+  // Add to database
   
   var shortUrl = 1;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
