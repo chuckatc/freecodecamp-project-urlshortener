@@ -23,11 +23,11 @@ db.once('open', function() {
 });
 
 var Schema = mongoose.Schema;
-var UrlSchema = new Schema({
+var urlSchema = new Schema({
   original_url: {type: String, required: true},
   short_url: Number
 });
-var Person = mongoose.model('Person', personSchema);
+var Url = mongoose.model('Url', urlSchema);
 
 
 app.use(cors());
@@ -41,18 +41,23 @@ app.get('/', function(req, res){
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-  
-// your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
-});
-
 
 // Short URL creation
 app.post("/api/shorturl/new", function (req, res) {
+  var originalUrl = req.body.url;
+  
+  // Validate provided URL
+  // TODO
+  
+  //
+  
   var shortUrl = 1;
-  res.json({"original_url": req.body.url, "short_url": shortUrl});
+  res.json({"original_url": originalUrl, "short_url": shortUrl});
 });
+
+
+// Redirect from short URL to original
+// TODO
 
 
 app.listen(port, function () {
