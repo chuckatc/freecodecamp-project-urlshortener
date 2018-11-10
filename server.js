@@ -72,7 +72,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
   var query = {original_url: originalUrl};
   
   // If URL has already been created, return it
-  Url.findOne(query).select('original_url', 'short_url').exec(function(err, data)) {
+  Url.findOne(query).select(['original_url', 'short_url']).exec(function(err, data) {
     if (err) next(err);
     console.log(data);
     if (data) res.json(data);
