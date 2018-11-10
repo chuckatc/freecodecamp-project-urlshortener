@@ -48,9 +48,11 @@ UrlSchema.pre('save', function(next) {
     });
 });
 
-
 var Url = mongoose.model('Url', UrlSchema);
 
+if (Counter.estimatedDocumentCount() === 0) {
+  
+}
 
 app.use(cors());
 
@@ -70,16 +72,6 @@ app.post("/api/shorturl/new", function (req, res, next) {
   
   // Validate provided URL
   // TODO
-  
-  /*
-  // Upsert URL
-  var query = {"original_url": originalUrl};
-  Url.findOneAndUpdate(query, query, {upsert: true, new: true}, function(err, data) {
-    if (err) next(err);
-    console.log(data);
-  });
-  */
-  
   
   var url = new Url({original_url: originalUrl});
   url.save(function(err, data) {
