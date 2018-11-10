@@ -32,9 +32,10 @@ var Schema = mongoose.Schema;
 // URL schema and model
 var urlSchema = new Schema({
   //original_url: {type: String, unique: true}
-  original_url: String
+  original_url: String,
+  short_url: Number
 });
-urlSchema.plugin(autoIncrement.plugin, 'Url');
+urlSchema.plugin(autoIncrement.plugin, {model: 'Url', field: 'short_url'});
 var Url = mongoose.model('Url', urlSchema);
 
 
