@@ -4,7 +4,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-autoIncrement = require('mongoose-auto-increment');
+var autoIncrement = require('mongoose-auto-increment');
 
 var cors = require('cors');
 
@@ -23,13 +23,17 @@ db.once('open', function() {
   console.log('Notice: db connected!');
 });
 
-// Auto-incremented sequence based on
-// https://stackoverflow.com/questions/28357965/mongoose-auto-increment#30164636
+
+// Auto-increment based on examples here
+// https://www.npmjs.com/package/mongoose-auto-increment
+autoIncrement.initialize(db);
 var Schema = mongoose.Schema;
+
+// URL schema and model
 var urlSchema = new Schema({
   original_url: {type: String, unique: true}
 });
-
+urlSchema.plugin(autoIncrement.plugin, 'Url');
 var Url = mongoose.model('Url', urlSchema);
 
 
@@ -52,7 +56,8 @@ app.post("/api/shorturl/new", function (req, res, next) {
   // Validate provided URL
   // TODO
   
-  // Add to database
+  // Upsert URL
+  
   
   var shortUrl = 1;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
