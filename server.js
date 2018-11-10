@@ -72,12 +72,13 @@ app.post("/api/shorturl/new", function (req, res, next) {
   var query = {original_url: originalUrl};
   
   // If URL has already been created, return it
-  Url.findOne(query, function(err, data) {
+  Url.findOne(query).select('original_url', 'short_url').exec(function(err, data)) {
     if (err) next(err);
     console.log(data);
+    if (data) res.json(data);
   });
 
-  
+  /*
   // Validate provided URL
   // TODO
   
@@ -99,6 +100,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
   
   var shortUrl = 100;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
+  */
 });
 
 
