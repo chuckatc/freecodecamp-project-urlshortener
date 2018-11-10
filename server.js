@@ -22,11 +22,14 @@ db.once('open', function() {
   console.log('Notice: db connected!');
 });
 
+// Auto-incremented sequence based on
+// https://stackoverflow.com/questions/28357965/mongoose-auto-increment#30164636
 var Schema = mongoose.Schema;
 var urlSchema = new Schema({
   original_url: {type: String, required: true},
   short_url: Number
 });
+
 var Url = mongoose.model('Url', urlSchema);
 
 
