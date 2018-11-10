@@ -27,12 +27,11 @@ autoIncrement.initialize(mongoose.connection);
 
 
 var Schema = mongoose.Schema;
-var urlSchema = new Schema({
-  original_url: String,
-  short_url: Number
+var UrlSchema = new Schema({
+  original_url: {type: String, required: true}
 });
-urlSchema.plugin(autoIncrement.plugin, 'Url');
-var Url = mongoose.model('Url', urlSchema);
+UrlSchema.plugin(autoIncrement.plugin, 'Url');
+var Url = mongoose.model('Url', UrlSchema);
 
 
 app.use(cors());
