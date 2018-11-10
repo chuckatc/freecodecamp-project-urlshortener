@@ -23,11 +23,14 @@ db.once('open', function() {
 });
 
 
-
 var Schema = mongoose.Schema;
+
 var UrlSchema = new Schema({
-  original_url: String
+  original_url: String,
+  short_url: { type: Number, default: 0 }
 });
+
+
 var Url = mongoose.model('Url', UrlSchema);
 
 
@@ -53,11 +56,11 @@ app.post("/api/shorturl/new", function (req, res, next) {
   
   // Upsert URL
   var query = {"original_url": originalUrl};
-  Url.findOneAndUpdate(query, new Url(query), {upsert: true}, function(err, data) {
+  Url.findOneAndUpdate(query, query, {upsert: true, new: true}, function(err, data) {
     if (err) next(err);
     console.log(data);
-    //console.log(Url.nextCount());
   });
+  
   
   var shortUrl = 1;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
