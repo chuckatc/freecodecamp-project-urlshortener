@@ -50,10 +50,11 @@ UrlSchema.pre('save', function(next) {
 
 var Url = mongoose.model('Url', UrlSchema);
 
-if (Counter.estimatedDocumentCount() === 0) {
+Counter.count({_id: }, function(err, count) {
+  if (count < 1)
   var counter = new Counter({_id: 'urlId'});
   counter.save(function(err, data) {
-    if (err) return done(err); 
+    if (err) next(err); 
   });
 }
 
