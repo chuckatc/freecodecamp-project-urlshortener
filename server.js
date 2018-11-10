@@ -43,7 +43,7 @@ UrlSchema.pre('save', function(next) {
     Counter.findByIdAndUpdate({_id: 'urlId'}, {$inc: { seq: 1} }, {upsert: true}, function(error, counter)   {
         if(error)
             return next(error);
-        doc.testvalue = counter.seq;
+        doc.short_url = counter.seq;
         next();
     });
 });
@@ -71,20 +71,22 @@ app.post("/api/shorturl/new", function (req, res, next) {
   // Validate provided URL
   // TODO
   
-  /*
+  
   // Upsert URL
   var query = {"original_url": originalUrl};
   Url.findOneAndUpdate(query, query, {upsert: true, new: true}, function(err, data) {
     if (err) next(err);
     console.log(data);
   });
-  */
+  
+  /*
   var url = new Url({original_url: originalUrl});
   url.save(function(err, data) {
     if (err) return next(err);
     //return next(null, data);
     console.log(data);
   });
+  */
   
   
   var shortUrl = 1;
