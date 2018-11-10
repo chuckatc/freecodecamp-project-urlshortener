@@ -17,9 +17,18 @@ mongoose.connect(process.env.MONGOLAB_URI);
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
+
 db.once('open', function() {
   console.log('Notice: db connected!');
 });
+
+var Schema = mongoose.Schema;
+var UrlSchema = new Schema({
+  original_url: {type: String, required: true},
+  short_url: Number
+});
+var Person = mongoose.model('Person', personSchema);
+
 
 app.use(cors());
 
@@ -39,6 +48,7 @@ app.get("/api/hello", function (req, res) {
 });
 
 
+// Short URL creation
 app.post("/api/shorturl/new", function (req, res) {
   var shortUrl = 1;
   res.json({"original_url": req.body.url, "short_url": shortUrl});
