@@ -14,6 +14,12 @@ var port = process.env.PORT || 3000;
 /** this project needs a db !! **/ 
 mongoose.connect(process.env.MONGOLAB_URI);
 
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log('Notice: db connected!');
+});
+
 app.use(cors());
 
 /** this project needs to parse POST bodies **/
@@ -29,6 +35,11 @@ app.get('/', function(req, res){
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
+});
+
+
+app.post("", function () {
+  
 });
 
 
