@@ -4,6 +4,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
+autoIncrement = require('mongoose-auto-increment');
 
 var cors = require('cors');
 
@@ -26,8 +27,7 @@ db.once('open', function() {
 // https://stackoverflow.com/questions/28357965/mongoose-auto-increment#30164636
 var Schema = mongoose.Schema;
 var urlSchema = new Schema({
-  original_url: {type: String, required: true},
-  short_url: Number
+  original_url: {type: String, unique: true}
 });
 
 var Url = mongoose.model('Url', urlSchema);
