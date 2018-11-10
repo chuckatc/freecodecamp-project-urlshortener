@@ -25,7 +25,7 @@ db.once('open', function() {
 
 var Schema = mongoose.Schema;
 
-// Reference: Auto-increment counter from
+// Reference: Based on auto-increment counter from
 // https://stackoverflow.com/questions/28357965/mongoose-auto-increment#30164636
 var CounterSchema = Schema({
     _id: {type: String, required: true},
@@ -40,8 +40,8 @@ var UrlSchema = new Schema({
 
 UrlSchema.pre('save', function(next) {
     var doc = this;
-  
-    Counter.findByIdAndUpdate({_id: 'urlId'}, {$inc: { seq: 1} }, /*{upsert: true, new: true},*/ function(error, counter)   {
+    // Use option upsert to create when non-existent and new to return seq value when created
+    Counter.findByIdAndUpdate({_id: 'urlId'}, {$inc: { seq: 1} }, {upsert: true, new: true}, function(error, counter)   {
         if(error)
             return next(error);
         doc.short_url = counter.seq;
@@ -69,6 +69,8 @@ app.get('/', function(req, res){
 // Short URL creation
 app.post("/api/shorturl/new", function (req, res, next) {
   var originalUrl = req.body.url;
+  
+  // Is URL already there
   
 
   
