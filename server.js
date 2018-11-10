@@ -49,7 +49,7 @@ app.post("/api/shorturl/new", function (req, res) {
   // Validate provided URL
   // TODO
   
-  //
+  // 
   
   var shortUrl = 1;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
