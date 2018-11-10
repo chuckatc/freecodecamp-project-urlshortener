@@ -4,7 +4,6 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-var autoIncrement = require('mongoose-auto-increment');
 
 var cors = require('cors');
 
@@ -14,7 +13,7 @@ var app = express();
 var port = process.env.PORT || 3000;
 
 /** this project needs a db !! **/ 
-mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGOLAB_URI, {});
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -24,18 +23,11 @@ db.once('open', function() {
 });
 
 
-// Auto-increment based on examples here
-// https://www.npmjs.com/package/mongoose-auto-increment
-autoIncrement.initialize(db);
 var Schema = mongoose.Schema;
-
-// URL schema and model
 var urlSchema = new Schema({
-  //original_url: {type: String, unique: true}
   original_url: String,
   short_url: Number
 });
-urlSchema.plugin(autoIncrement.plugin, {model: 'Url', field: 'short_url'});
 var Url = mongoose.model('Url', urlSchema);
 
 
