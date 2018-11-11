@@ -75,7 +75,9 @@ app.post("/api/shorturl/new", function (req, res, next) {
   Url.findOne(query).select(['original_url', 'short_url']).exec(function(err, data) {
     if (err) next(err);
     console.log(data);
-    if (data) res.json(data);
+    if (data) {
+      res.json({original_url: data.original_url, short_url: data.short_url});
+    }
   });
 
   /*
