@@ -107,7 +107,9 @@ app.post("/api/shorturl/new", function (req, res, next) {
 
 
 // Redirect from short URL to original
-app.get('/api/shorturl/:short_url', function(req, res) {
+app.get('/api/shorturl/:short_url', function(req, res, next) {
+  console.log(req.param.short_url);
+  res.send(short_url);
 });
 
 app.listen(port, function () {
