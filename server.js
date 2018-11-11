@@ -76,14 +76,12 @@ app.post("/api/shorturl/new", function (req, res, next) {
     if (err) next(err);
     console.log(data);
     if (data) {
-      res.json({
-        original_url: data.original_url,
-        short_url: data.short_url
-      });
+      res.json({original_url: data.original_url, short_url: data.short_url});
+      next();
     }
   });
 
-  /*
+  
   // Validate provided URL
   // TODO
   
@@ -105,7 +103,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
   
   var shortUrl = 100;
   res.json({"original_url": originalUrl, "short_url": shortUrl});
-  */
+  
 });
 
 
