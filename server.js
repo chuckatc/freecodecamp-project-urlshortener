@@ -52,7 +52,7 @@ UrlSchema.pre('save', function(next) {
 var Url = mongoose.model('Url', UrlSchema);
 
 
-
+var invalidResponse = {error: "invalid URL"};
 
 app.use(cors());
 
@@ -108,8 +108,8 @@ app.post("/api/shorturl/new", function (req, res, next) {
 
 // Redirect from short URL to original
 app.get('/api/shorturl/:short_url', function(req, res, next) {
-  console.log(req.param.short_url);
-  res.send(short_url);
+  console.log(req.params.short_url);
+  res.redirect(); 
 });
 
 app.listen(port, function () {
