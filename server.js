@@ -84,26 +84,30 @@ app.post("/api/shorturl/new", function (req, res, next) {
            || !url_parsed.hostname) {
         res.json({"error":"invalid URL"});
       } else {
-        dns.lookup();
-        
-        // Create new URL doc
-        var url = new Url({original_url: originalUrl});
-        url.save(function(err, data) {
+        dns.lookup(url_parsed.hostname, function(err, addresses) {
           if (err) {
-            if (err.message.startsWith('E11000 duplicate key error')) {
-              console.log("URL already in collection");
-            } else {
-              return next(err);
-            }
+            console.log(err.message);
+            next(err);
           }
-
-          // Retrieve newly-added URL for response
-          Url.findOne(query, function(err, data) {
-            if (err) next(err);
-            if (data) {
-              res.json({original_url: data.original_url, short_url: data.short_url});
+          // Create new URL doc
+          var url = new Url({original_url: originalUrl});
+          url.save(function(err, data) {
+            if (err) {
+              if (err.message.startsWith('E11000 duplicate key error')) {
+                console.log("URL already in collection");
+              } else {
+                return next(err);
+              }
             }
-          });       
+
+            // Retrieve newly-added URL for response
+            Url.findOne(query, function(err, data) {
+              if (err) next(err);
+              if (data) {
+                res.json({original_url: data.original_url, short_url: data.short_url});
+              }
+            });       
+          });
         });
       }
     }
