@@ -52,8 +52,6 @@ UrlSchema.pre('save', function(next) {
 var Url = mongoose.model('Url', UrlSchema);
 
 
-var invalidResponse = {error: "invalid URL"};
-
 app.use(cors());
 
 /** this project needs to parse POST bodies **/
@@ -108,8 +106,16 @@ app.post("/api/shorturl/new", function (req, res, next) {
 
 // Redirect from short URL to original
 app.get('/api/shorturl/:short_url', function(req, res, next) {
-  console.log(req.params.short_url);
-  res.redirect(); 
+  Url.findOne({short_url: req.params.short_url}, 'original_url', function(err, data) {
+    if (err) next(err);
+    if (data) {
+      console.log(data);
+      res.redirect(data.original_url);
+    } else {
+      res.status(404).send('Not found');
+    }
+  });
+  //res.redirect(); 
 });
 
 app.listen(port, function () {
