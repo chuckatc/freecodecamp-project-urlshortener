@@ -5,7 +5,8 @@ var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
 var cors = require('cors');
-
+var { URL } = require('url');
+var dns = require('dns');
 
 var app = express();
 
@@ -77,7 +78,11 @@ app.post("/api/shorturl/new", function (req, res, next) {
     } else {
   
       // Validate provided URL
-      // TODO
+      try {
+        var myURL = new URL(originalUrl);
+      } catch(err) {
+        res.json({error: "invalid URL"});
+      }
 
       // Create new URL doc
       var url = new Url({original_url: originalUrl});
