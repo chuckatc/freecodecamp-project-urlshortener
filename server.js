@@ -112,10 +112,9 @@ app.get('/api/shorturl/:short_url', function(req, res, next) {
       console.log(data);
       res.redirect(data.original_url);
     } else {
-      res.status(404).send('Not found');
+      res.status(404).json({error: "No short url found for given input"});
     }
   });
-  //res.redirect(); 
 });
 
 app.listen(port, function () {
