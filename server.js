@@ -81,7 +81,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
       var url_parsed = url.parse(originalUrl);
       console.log(url_parsed);
       if (!['http:', 'https:'].includes(url_parsed.protocol)
-           /*|| url_parsed.hostname === null*/) {
+           || !url_parsed.hostname) {
         res.json({"error":"invalid URL"});
       //} else if (false && dns.lookup()) {
       } else {
