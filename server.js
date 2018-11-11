@@ -5,7 +5,6 @@ var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
 var cors = require('cors');
-var url = require('url');
 var dns = require('dns');
 
 var app = express();
@@ -78,7 +77,10 @@ app.post("/api/shorturl/new", function (req, res, next) {
     } else {
   
       // Validate provided URL
+      var url = require('url');
+      console.log(typeof url);
       var url_parsed = url.parse(originalUrl);
+      console.log(url_parsed);
 
       // Create new URL doc
       var url = new Url({original_url: originalUrl});
