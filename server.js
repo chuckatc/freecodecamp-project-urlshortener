@@ -72,38 +72,42 @@ app.post("/api/shorturl/new", function (req, res, next) {
   var query = {original_url: originalUrl};
   
   // If URL has already been created, return it
-  Url.findOne(query).select(['original_url', 'short_url']).exec(function(err, data) {
+  Url.findOne(query, function(err, data) {
     if (err) next(err);
     console.log(data);
     if (data) {
       res.json({original_url: data.original_url, short_url: data.short_url});
-      next();
-    }
-  });
+    } else {
+  
+      // Validate provided URL
+      // TODO
 
-  
-  // Validate provided URL
-  // TODO
-  
-  var url = new Url({original_url: originalUrl});
-  url.save(function(err, data) {
-    if (err) {
-      if (err.message.startsWith('E11000 duplicate key error')) {
-        console.log("URL already in collection");
-      } else {
-        console.log(err);
-        return next(err);
-      }
+      var url = new Url({original_url: originalUrl});
+      url.save(function(err, data) {
+        if (err) {
+          if (err.message.startsWith('E11000 duplicate key error')) {
+            console.log("URL already in collection");
+          } else {
+            console.log(err);
+            return next(err);
+          }
+        }
+        //return next(null, data);
+        //console.log(data);
+      });
+
+
+      //var shortUrl = 100;
+      //res.json({"original_url": originalUrl, "short_url": shortUrl});
+      Url.findOne(query, function(err, data) {
+        if (err) next(err);
+        console.log(data);
+        if (data) {
+          res.json({original_url: data.original_url, short_url: data.short_url});
+        }
+      });
     }
-    //return next(null, data);
-    //console.log(data);
   });
-  
-  
-  
-  var shortUrl = 100;
-  res.json({"original_url": originalUrl, "short_url": shortUrl});
-  
 });
 
 
