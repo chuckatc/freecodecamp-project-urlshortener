@@ -79,35 +79,43 @@ app.post("/api/shorturl/new", function (req, res, next) {
       // Validate provided URL
       var url = require('url');
       var url_parsed = url.parse(originalUrl);
+      
       // Check for valid protocol and that it has a hostname
       if (!['http:', 'https:'].includes(url_parsed.protocol)
            || !url_parsed.hostname) {
         res.json({"error":"invalid URL"});
       } else {
+        
+        // Check hostname resolves
         dns.lookup(url_parsed.hostname, function(err, addresses) {
           if (err) {
-            console.log(err.message);
-            next(err);
-          }
-          // Create new URL doc
-          var url = new Url({original_url: originalUrl});
-          url.save(function(err, data) {
-            if (err) {
-              if (err.message.startsWith('E11000 duplicate key error')) {
-                console.log("URL already in collection");
-              } else {
-                return next(err);
-              }
+            if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
+              res.json({error: "invalid Hostname"});
+            } else {
+              next(err);
             }
-
-            // Retrieve newly-added URL for response
-            Url.findOne(query, function(err, data) {
-              if (err) next(err);
-              if (data) {
-                res.json({original_url: data.original_url, short_url: data.short_url});
+          } else {
+          
+            // Create new URL doc
+            var url = new Url({original_url: originalUrl});
+            url.save(function(err, data) {
+              if (err) {
+                if (err.message.startsWith('E11000 duplicate key error')) {
+                  console.log("URL already in collection");
+                } else {
+                  return next(err);
+                }
               }
-            });       
-          });
+
+              // Retrieve newly-added URL for response
+              Url.findOne(query, function(err, data) {
+                if (err) next(err);
+                if (data) {
+                  res.json({original_url: data.original_url, short_url: data.short_url});
+                }
+              });       
+            });
+          }
         });
       }
     }
