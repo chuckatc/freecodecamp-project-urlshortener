@@ -79,12 +79,12 @@ app.post("/api/shorturl/new", function (req, res, next) {
       // Validate provided URL
       var url = require('url');
       var url_parsed = url.parse(originalUrl);
-      console.log(url_parsed);
+      // Check for valid protocol and that it has a hostname
       if (!['http:', 'https:'].includes(url_parsed.protocol)
            || !url_parsed.hostname) {
         res.json({"error":"invalid URL"});
-      //} else if (false && dns.lookup()) {
       } else {
+        dns.lookup();
         
         // Create new URL doc
         var url = new Url({original_url: originalUrl});
@@ -93,7 +93,6 @@ app.post("/api/shorturl/new", function (req, res, next) {
             if (err.message.startsWith('E11000 duplicate key error')) {
               console.log("URL already in collection");
             } else {
-              console.log(err);
               return next(err);
             }
           }
@@ -117,7 +116,6 @@ app.get('/api/shorturl/:short_url', function(req, res, next) {
   Url.findOne({short_url: req.params.short_url}, 'original_url', function(err, data) {
     if (err) next(err);
     if (data) {
-      console.log(data);
       res.redirect(data.original_url);
     } else {
       res.json({error: "No short url found for given input"});
