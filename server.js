@@ -78,9 +78,11 @@ app.post("/api/shorturl/new", function (req, res, next) {
   
       // Validate provided URL
       var url = require('url');
-      console.log(typeof url);
       var url_parsed = url.parse(originalUrl);
-      console.log(url_parsed);
+      if (!['http', 'https'].contains(url_parsed.protocol)
+           || url_parsed.hostname === null) {
+        res.json({"error":"invalid URL"});
+      } else if (dns.lookup())
 
       // Create new URL doc
       var url = new Url({original_url: originalUrl});
