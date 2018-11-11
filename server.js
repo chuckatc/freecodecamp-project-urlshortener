@@ -74,7 +74,6 @@ app.post("/api/shorturl/new", function (req, res, next) {
   // If URL has already been created, return it
   Url.findOne(query, function(err, data) {
     if (err) next(err);
-    console.log(data);
     if (data) {
       res.json({original_url: data.original_url, short_url: data.short_url});
     } else {
@@ -82,6 +81,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
       // Validate provided URL
       // TODO
 
+      // Create new URL doc
       var url = new Url({original_url: originalUrl});
       url.save(function(err, data) {
         if (err) {
@@ -93,18 +93,17 @@ app.post("/api/shorturl/new", function (req, res, next) {
           }
         }
         //return next(null, data);
-        //console.log(data);
-      });
-
-
-      //var shortUrl = 100;
-      //res.json({"original_url": originalUrl, "short_url": shortUrl});
-      Url.findOne(query, function(err, data) {
-        if (err) next(err);
         console.log(data);
-        if (data) {
-          res.json({original_url: data.original_url, short_url: data.short_url});
-        }
+
+        // Get newly-added URL and return it
+        Url.findOne(query, function(err, data) {
+          if (err) next(err);
+          console.log(data);
+          if (data) {
+            res.json({original_url: data.original_url, short_url: data.short_url});
+          }
+        });
+        
       });
     }
   });
