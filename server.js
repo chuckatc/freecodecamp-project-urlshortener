@@ -92,18 +92,14 @@ app.post("/api/shorturl/new", function (req, res, next) {
             return next(err);
           }
         }
-        //return next(null, data);
-        console.log(data);
 
-        // Get newly-added URL and return it
+        // Retrieve newly-added URL for response
         Url.findOne(query, function(err, data) {
           if (err) next(err);
-          console.log(data);
           if (data) {
             res.json({original_url: data.original_url, short_url: data.short_url});
           }
-        });
-        
+        });       
       });
     }
   });
