@@ -82,6 +82,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
         var myURL = new URL(originalUrl);
       } catch(err) {
         res.json({error: "invalid URL"});
+        next();
       }
 
       // Create new URL doc
