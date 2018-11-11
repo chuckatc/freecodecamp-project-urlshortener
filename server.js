@@ -107,8 +107,8 @@ app.post("/api/shorturl/new", function (req, res, next) {
 
 
 // Redirect from short URL to original
-// TODO
-
+app.get('/api/shorturl/:short_url', function(req, res) {
+});
 
 app.listen(port, function () {
   console.log('Node.js listening ...');
