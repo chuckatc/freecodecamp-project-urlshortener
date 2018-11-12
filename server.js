@@ -1,5 +1,4 @@
 'use strict';
-
 require('dotenv').config()  // since we don't have Glitch doing this for us
 
 var express = require('express');
@@ -14,13 +13,13 @@ var app = express();
 // Basic Configuration 
 var port = process.env.PORT || 3000;
 
-/** this project needs a db !! **/ 
-mongoose.connect(process.env.MONGOLAB_URI, {useMongoClient: true});
+/** this project needs a db !! **/
+mongoose.connect(process.env.MONGOLAB_URI, { useMongoClient: true });
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 
-db.once('open', function() {
+db.once('open', function () {
   console.log('Notice: db connected!');
 });
 
@@ -29,25 +28,25 @@ var Schema = mongoose.Schema;
 // Reference: Based on auto-increment counter from
 // https://stackoverflow.com/questions/28357965/mongoose-auto-increment#30164636
 var CounterSchema = Schema({
-    _id: {type: String, required: true},
-    seq: { type: Number, default: 0 }
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 0 }
 });
 var Counter = mongoose.model('Counter', CounterSchema);
 
 var UrlSchema = new Schema({
-  original_url: {type: String, unique: true},
+  original_url: { type: String, unique: true },
   short_url: Number
 });
 
-UrlSchema.pre('save', function(next) {
-    var doc = this;
-    // Use option upsert to create when non-existent and new to return seq value when created
-    Counter.findByIdAndUpdate({_id: 'urlId'}, {$inc: { seq: 1} }, {upsert: true, new: true}, function(error, counter)   {
-        if(error)
-            return next(error);
-        doc.short_url = counter.seq;
-        next();
-    });
+UrlSchema.pre('save', function (next) {
+  var doc = this;
+  // Use option upsert to create when non-existent and new to return seq value when created
+  Counter.findByIdAndUpdate({ _id: 'urlId' }, { $inc: { seq: 1 } }, { upsert: true, new: true }, function (error, counter) {
+    if (error)
+      return next(error);
+    doc.short_url = counter.seq;
+    next();
+  });
 });
 
 var Url = mongoose.model('Url', UrlSchema);
@@ -56,11 +55,11 @@ var Url = mongoose.model('Url', UrlSchema);
 app.use(cors());
 
 /** this project needs to parse POST bodies **/
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
@@ -68,38 +67,38 @@ app.get('/', function(req, res){
 // Short URL creation
 app.post("/api/shorturl/new", function (req, res, next) {
   var originalUrl = req.body.url;
-  var query = {original_url: originalUrl};
-  
+  var query = { original_url: originalUrl };
+
   // If URL has already been created, return it
-  Url.findOne(query, function(err, data) {
+  Url.findOne(query, function (err, data) {
     if (err) next(err);
     if (data) {
-      res.json({original_url: data.original_url, short_url: data.short_url});
+      res.json({ original_url: data.original_url, short_url: data.short_url });
     } else {
-  
+
       // Validate provided URL
       var url = require('url');
       var url_parsed = url.parse(originalUrl);
-      
+
       // Check for valid protocol and that it has a hostname
       if (!['http:', 'https:'].includes(url_parsed.protocol)
-           || !url_parsed.hostname) {
-        res.json({"error":"invalid URL"});
+        || !url_parsed.hostname) {
+        res.json({ "error": "invalid URL" });
       } else {
-        
+
         // Check hostname resolves
-        dns.lookup(url_parsed.hostname, function(err, addresses) {
+        dns.lookup(url_parsed.hostname, function (err, addresses) {
           if (err) {
             if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
-              res.json({error: "invalid Hostname"});
+              res.json({ error: "invalid Hostname" });
             } else {
               next(err);
             }
           } else {
-          
+
             // Create new URL doc
-            var url = new Url({original_url: originalUrl});
-            url.save(function(err, data) {
+            var url = new Url({ original_url: originalUrl });
+            url.save(function (err, data) {
               if (err) {
                 if (err.message.startsWith('E11000 duplicate key error')) {
                   console.log("URL already in collection");
@@ -114,7 +113,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
                 if (data) {
                   res.json({ original_url: data.original_url, short_url: data.short_url });
                 }
-              });       
+              });
             });
           }
         });
@@ -125,13 +124,13 @@ app.post("/api/shorturl/new", function (req, res, next) {
 
 
 // Redirect from short URL to original
-app.get('/api/shorturl/:short_url', function(req, res, next) {
-  Url.findOne({short_url: req.params.short_url}, 'original_url', function(err, data) {
+app.get('/api/shorturl/:short_url', function (req, res, next) {
+  Url.findOne({ short_url: req.params.short_url }, 'original_url', function (err, data) {
     if (err) next(err);
     if (data) {
       res.redirect(data.original_url);
     } else {
-      res.json({error: "No short url found for given input"});
+      res.json({ error: "No short url found for given input" });
     }
   });
 });
