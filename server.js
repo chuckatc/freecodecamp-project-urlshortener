@@ -95,24 +95,32 @@ app.post("/api/shorturl/new", function (req, res, next) {
       }
 
       // Create new URL doc
+      // var url = new Url({ original_url: originalUrl });
+      // url.save(function (err, data) {
+      //   if (err) {
+      //     if (err.message.startsWith('E11000 duplicate key error')) {
+      //       console.log("URL already in collection");
+      //     } else {
+      //       return next(err);
+      //     }
+      //   }
       var url = new Url({ original_url: originalUrl });
-      url.save(function (err, data) {
-        if (err) {
-          if (err.message.startsWith('E11000 duplicate key error')) {
-            console.log("URL already in collection");
-          } else {
-            return next(err);
-          }
-        }
+      url.save()
+        .catch(err => {
+          if (err.message.startsWith('E11000 duplicate key error'))
+            console.log("URL already in collection")
+          else
+            next(err)
+        })
 
         // Retrieve newly-added URL for response
-        Url.findOne(query)
-          .then(data => {
-            if (!data) return res.json({ error: "Couldn't retrieve URL" })
-            res.json({ original_url: data.original_url, short_url: data.short_url })
-          })
-          .catch(next)
-      });
+        .then(Url.findOne(query))
+        .then(data => {
+          if (!data) return res.json({ error: "Couldn't retrieve URL" })
+          res.json({ original_url: data.original_url, short_url: data.short_url })
+        })
+        .catch(next)
+      
     });
   });
 });
