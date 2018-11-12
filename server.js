@@ -95,15 +95,6 @@ app.post("/api/shorturl/new", function (req, res, next) {
       }
 
       // Create new URL doc
-      // var url = new Url({ original_url: originalUrl });
-      // url.save(function (err, data) {
-      //   if (err) {
-      //     if (err.message.startsWith('E11000 duplicate key error')) {
-      //       console.log("URL already in collection");
-      //     } else {
-      //       return next(err);
-      //     }
-      //   }
       var url = new Url({ original_url: originalUrl });
       url.save()
         .catch(err => {
@@ -120,7 +111,6 @@ app.post("/api/shorturl/new", function (req, res, next) {
           res.json({ original_url: data.original_url, short_url: data.short_url })
         })
         .catch(next)
-      
     });
   });
 });
