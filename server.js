@@ -124,17 +124,16 @@ app.post("/api/shorturl/new", function (req, res, next) {
 
 
 // Redirect from short URL to original
-app.get('/api/shorturl/:short_url', function (req, res, next) {
-  Url.findOne({ short_url: req.params.short_url }, 'original_url', function (err, data) {
-    if (err) next(err);
-    if (data) {
-      res.redirect(data.original_url);
-    } else {
-      res.json({ error: "No short url found for given input" });
-    }
-  });
+app.get('/api/shorturl/:short_url', (req, res, next) => {
+  Url.findOne({ short_url: req.params.short_url }, 'original_url')
+    .then(data => {
+      if (!data) return res.json({ error: "No short url found for given input" })
+      return res.redirect(data.original_url)
+    })
+    .catch(next)
 });
 
-app.listen(port, function () {
+
+app.listen(port, () => {
   console.log('Node.js listening ...');
 });
