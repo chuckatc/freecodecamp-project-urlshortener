@@ -81,41 +81,39 @@ app.post("/api/shorturl/new", function (req, res, next) {
     // Check for valid protocol and that it has a hostname
     if (!['http:', 'https:'].includes(url_parsed.protocol)
       || !url_parsed.hostname) {
-      res.json({ "error": "invalid URL" });
-    } else {
-
-      // Check hostname resolves
-      dns.lookup(url_parsed.hostname, function (err, addresses) {
-        if (err) {
-          if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
-            res.json({ error: "invalid Hostname" });
-          } else {
-            next(err);
-          }
-        } else {
-
-          // Create new URL doc
-          var url = new Url({ original_url: originalUrl });
-          url.save(function (err, data) {
-            if (err) {
-              if (err.message.startsWith('E11000 duplicate key error')) {
-                console.log("URL already in collection");
-              } else {
-                return next(err);
-              }
-            }
-
-            // Retrieve newly-added URL for response
-            Url.findOne(query)
-              .then(data => {
-                if (!data) return res.json({ error: "Couldn't retrieve URL" })
-                res.json({ original_url: data.original_url, short_url: data.short_url })
-              })
-              .catch(next)
-          });
-        }
-      });
+      return res.json({ "error": "invalid URL" });
     }
+
+    // Check hostname resolves
+    dns.lookup(url_parsed.hostname, function (err, addresses) {
+      if (err) {
+        if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
+          return res.json({ error: "invalid Hostname" });
+        } else {
+          next(err);
+        }
+      }
+
+      // Create new URL doc
+      var url = new Url({ original_url: originalUrl });
+      url.save(function (err, data) {
+        if (err) {
+          if (err.message.startsWith('E11000 duplicate key error')) {
+            console.log("URL already in collection");
+          } else {
+            return next(err);
+          }
+        }
+
+        // Retrieve newly-added URL for response
+        Url.findOne(query)
+          .then(data => {
+            if (!data) return res.json({ error: "Couldn't retrieve URL" })
+            res.json({ original_url: data.original_url, short_url: data.short_url })
+          })
+          .catch(next)
+      });
+    });
   });
 });
 
