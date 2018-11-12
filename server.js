@@ -1,5 +1,7 @@
 'use strict';
 
+require('dotenv').config()  // since we don't have Glitch doing this for us
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var mongo = require('mongodb');
@@ -21,7 +23,6 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
   console.log('Notice: db connected!');
 });
-
 
 var Schema = mongoose.Schema;
 
@@ -108,10 +109,10 @@ app.post("/api/shorturl/new", function (req, res, next) {
               }
 
               // Retrieve newly-added URL for response
-              Url.findOne(query, function(err, data) {
+              Url.findOne(query, function (err, data) {
                 if (err) next(err);
                 if (data) {
-                  res.json({original_url: data.original_url, short_url: data.short_url});
+                  res.json({ original_url: data.original_url, short_url: data.short_url });
                 }
               });       
             });
