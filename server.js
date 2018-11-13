@@ -91,8 +91,7 @@ app.post("/api/shorturl/new", function (req, res, next) {
       .then(() => {
 
         // Create new URL doc
-        const url = new Url(query);
-        url.save()
+        new Url(query).save()
           .catch(err => {
             if (err.message.startsWith('E11000 duplicate key error'))
               console.log("URL already in collection")
