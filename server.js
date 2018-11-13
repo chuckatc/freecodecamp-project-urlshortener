@@ -7,6 +7,7 @@ const mongo = require('mongodb')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const dns = require('dns')
+const { promisify } = require('util');
 
 const app = express()
 
@@ -49,6 +50,7 @@ UrlSchema.pre('save', next => {
 
 const Url = mongoose.model('Url', UrlSchema)
 
+const lookupAsync = promisify(dns.lookup)
 
 app.use(cors());
 
@@ -84,36 +86,38 @@ app.post("/api/shorturl/new", function (req, res, next) {
       return res.json({ "error": "invalid URL" });
     }
 
-    // Check hostname resolves
-    dns.lookup(url_parsed.hostname, function (err, addresses) {
-      if (err) {
+    // Try to resolve hostname
+    lookupAsync(url_parsed.hostname)
+      .then(() => {
+
+        // Create new URL doc
+        const url = new Url(query);
+        url.save()
+          .catch(err => {
+            if (err.message.startsWith('E11000 duplicate key error'))
+              console.log("URL already in collection")
+            else
+              next(err)
+          })
+
+          // Retrieve newly-added URL for response
+          .then(Url.findOne(query))
+          .then(data => {
+            if (!data) return res.json({ error: "Couldn't retrieve URL" })
+            return res.json({ original_url: data.original_url, short_url: data.short_url })
+          })
+          .catch(next)
+      })
+
+      // Handle resolution errors
+      .catch(err => {
         if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
-          return res.json({ error: "invalid Hostname" });
-        } else {
-          next(err);
+          return res.json({ "error": "invalid Hostname" })
         }
-      }
-
-      // Create new URL doc
-      var url = new Url({ original_url: originalUrl });
-      url.save()
-        .catch(err => {
-          if (err.message.startsWith('E11000 duplicate key error'))
-            console.log("URL already in collection")
-          else
-            next(err)
-        })
-
-        // Retrieve newly-added URL for response
-        .then(Url.findOne(query))
-        .then(data => {
-          if (!data) return res.json({ error: "Couldn't retrieve URL" })
-          res.json({ original_url: data.original_url, short_url: data.short_url })
-        })
-        .catch(next)
-    });
-  });
-});
+        next(err)
+      })
+  })
+})
 
 
 // Redirect from short URL to original
