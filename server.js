@@ -37,7 +37,7 @@ const UrlSchema = new Schema({
   short_url: Number
 })
 
-UrlSchema.pre('save', next => {
+UrlSchema.pre('save', function(next) {
   const doc = this;
   // Use option upsert to create when non-existent and new to return seq value when created
   Counter.findByIdAndUpdate({ _id: 'urlId' }, { $inc: { seq: 1 } }, { upsert: true, new: true })
@@ -54,10 +54,20 @@ const lookupAsync = promisify(dns.lookup)
 
 app.use(cors());
 
-/** this project needs to parse POST bodies **/
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false }))
 
-app.use('/public', express.static(process.cwd() + '/public'));
+app.use("/public", express.static(process.cwd() + "/public"))
+
+
+// Default error handler 
+// from Wes Bos' talk https://www.youtube.com/watch?v=DwQJ_NPQWWo
+const catchErrors = fn => (req, res, next) => fn(req, res, next).catch(next)
+
+// Catch unhandled promise rejections
+// from Wes Bos' talk https://www.youtube.com/watch?v=DwQJ_NPQWWo
+process.on('unhandledRejection', error => {
+  console.log('unhandledRejection', error)
+})
 
 app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
@@ -65,69 +75,80 @@ app.get('/', function (req, res) {
 
 
 // Short URL creation
-app.post("/api/shorturl/new", function (req, res, next) {
-  var originalUrl = req.body.url;
-  var query = { original_url: originalUrl };
+app.post("/api/shorturl/new", respondWithExisting, megaHandler, respondWithExisting)
 
-  // If URL has already been created, return it
-  Url.findOne(query, function (err, data) {
-    if (err) next(err);
-    if (data) {
-      return res.json({ original_url: data.original_url, short_url: data.short_url });
-    }
+function respondWithExisting(req, res, next) {
+  const query = { original_url: req.body.url }
+  Url.findOne(query)
+    .then(data => {
+      if (data)
+        return res.json({ original_url: data.original_url, short_url: data.short_url })
+      next()
+    })
+    .catch(next)
+}
 
-    // Validate provided URL
-    var url = require('url');
-    var url_parsed = url.parse(originalUrl);
+function megaHandler(req, res, next) {
+  const { url: originalUrl } = req.body
+  const query = { original_url: originalUrl }
 
-    // Check for valid protocol and that it has a hostname
-    if (!['http:', 'https:'].includes(url_parsed.protocol)
-      || !url_parsed.hostname) {
-      return res.json({ "error": "invalid URL" });
-    }
+  // Validate provided URL
+  var url = require('url');
+  var url_parsed = url.parse(originalUrl);
 
-    // Try to resolve hostname
-    lookupAsync(url_parsed.hostname)
-      .then(() => {
+  // Check for valid protocol and that it has a hostname
+  if (!['http:', 'https:'].includes(url_parsed.protocol)
+    || !url_parsed.hostname) {
+    return res.json({ "error": "invalid URL" });
+  }
 
-        // Create new URL doc
-        new Url(query).save()
-          .catch(err => {
-            if (err.message.startsWith('E11000 duplicate key error'))
-              console.log("URL already in collection")
-            else
-              next(err)
-          })
+  // Try to resolve hostname
+  lookupAsync(url_parsed.hostname)
+    .then(() => {
 
-          // Retrieve newly-added URL for response
-          .then(Url.findOne(query))
-          .then(data => {
-            if (!data) return res.json({ error: "Couldn't retrieve URL" })
-            return res.json({ original_url: data.original_url, short_url: data.short_url })
-          })
-          .catch(next)
-      })
+      // Create new URL doc
+      new Url(query).save()
+        .catch(err => {
+          // if (err.message.startsWith('E11000 duplicate key error')) {
+          //   console.log("URL already in collection")
+          // }
+          // else
+            next(err)
+        })
 
-      // Handle resolution errors
-      .catch(err => {
-        if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
-          return res.json({ "error": "invalid Hostname" })
-        }
-        next(err)
-      })
-  })
-})
+        // Retrieve newly-added URL for response
+        .then(Url.findOne(query))
+        .then(data => {
+          if (!data) return res.json({ error: "Couldn't retrieve URL" })
+          return res.json({ original_url: data.original_url, short_url: data.short_url })
+        })
+        //.then(()=> next('route'))
+        .catch(next)
+    })
+    //.then(next)
+
+    // Handle resolution errors
+    .catch(err => {
+      if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
+        return res.json({ "error": "invalid Hostname" })
+      }
+      next(err)
+    })
+  //})
+}
 
 
 // Redirect from short URL to original
-app.get('/api/shorturl/:short_url', (req, res, next) => {
-  Url.findOne({ short_url: req.params.short_url }, 'original_url')
-    .then(data => {
-      if (!data) return res.json({ error: "No short url found for given input" })
-      return res.redirect(data.original_url)
-    })
-    .catch(next)
-});
+const redirectFromShortURL = async (req, res, next) => {
+  const data = await Url.findOne({ short_url: req.params.short_url }, 'original_url')
+  if (!data)
+    return res.json({ error: "No short url found for given input" })
+  return res.redirect(data.original_url)
+};
+
+
+// Redirect from short URL to original
+app.get('/api/shorturl/:short_url', catchErrors(redirectFromShortURL))
 
 
 app.listen(port, () => {
