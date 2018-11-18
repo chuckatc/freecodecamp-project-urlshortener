@@ -44,6 +44,7 @@ const UrlSchema = new Schema({
   short_url: Number
 })
 
+// Mongoose pre hook for atomic update to sequence
 UrlSchema.pre("save", function(next) {
   const doc = this
   // Use option upsert to create when non-existent and new to return seq value
@@ -80,9 +81,9 @@ process.on("unhandledRejection", error => {
   console.log("unhandledRejection", error)
 })
 
-app.get("/", function(req, res) {
-  res.sendFile(process.cwd() + "/views/index.html")
-})
+//
+// Handlers
+//
 
 // Respond with existing short and long URL if long is found
 const respondWithExisting = async (req, res, next) => {
@@ -97,6 +98,7 @@ const respondWithExisting = async (req, res, next) => {
   next()
 }
 
+// Check URL is valid and hostname resolves
 const validateUrl = async (req, res, next) => {
   // Validate provided URL
   const urlParsed = url.parse(req.body.url)
@@ -137,6 +139,14 @@ const redirectFromShortURL = async (req, res, next) => {
   }
   return res.redirect(data.original_url)
 }
+
+//
+// Routes
+//
+
+app.get("/", function(req, res) {
+  res.sendFile(process.cwd() + "/views/index.html")
+})
 
 // Short URL creation
 app.post(
