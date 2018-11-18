@@ -84,13 +84,10 @@ const respondWithExisting = async (req, res, next) => {
   next()
 }
 
-function megaHandler (req, res, next) {
-  const { url: originalUrl } = req.body
-  const query = { original_url: originalUrl }
-
+const validateUrl = async (req, res, next) => {
   // Validate provided URL
   var url = require('url')
-  var urlParsed = url.parse(originalUrl)
+  var urlParsed = url.parse(req.body.url)
 
   // Check for valid protocol and that it has a hostname
   if (!['http:', 'https:'].includes(urlParsed.protocol) ||
@@ -98,38 +95,28 @@ function megaHandler (req, res, next) {
     return res.json({ 'error': 'invalid URL' })
   }
 
-  // Try to resolve hostname
-  lookupAsync(urlParsed.hostname)
-    .then(() => {
-      // Create new URL doc
-      new Url(query).save()
-        .catch(err => {
-          // if (err.message.startsWith('E11000 duplicate key error')) {
-          //   console.log("URL already in collection")
-          // }
-          // else
-          next(err)
-        })
+  // Check hostname can be resolved
+  try {
+    await lookupAsync(urlParsed.hostname)
+  } catch (err) {
+    if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
+      return res.json({ error: 'invalid Hostname' })
+    }
+    next(err)
+  }
 
-        // Retrieve newly-added URL for response
-        .then(Url.findOne(query))
-        .then(data => {
-          if (!data) return res.json({ error: "Couldn't retrieve URL" })
-          return res.json({ original_url: data.original_url, short_url: data.short_url })
-        })
-        // .then(()=> next('route'))
-        .catch(next)
-    })
-    // .then(next)
+  next()
+}
 
-    // Handle resolution errors
-    .catch(err => {
-      if (err.message.startsWith('getaddrinfo ENOTFOUND')) {
-        return res.json({ 'error': 'invalid Hostname' })
-      }
-      next(err)
-    })
-  // })
+// Add long URL to database
+const addUrl = async (req, res, next) => {
+  const query = { original_url: req.body.url }
+
+  // Create new URL doc
+  await new Url(query)
+    .save()
+
+  next()
 }
 
 // Redirect from short URL to original
@@ -145,7 +132,13 @@ const redirectFromShortURL = async (req, res, next) => {
 }
 
 // Short URL creation
-app.post('/api/shorturl/new', respondWithExisting, megaHandler, respondWithExisting)
+app.post(
+  '/api/shorturl/new',
+  catchErrors(respondWithExisting),
+  catchErrors(validateUrl),
+  catchErrors(addUrl),
+  catchErrors(respondWithExisting)
+)
 
 // Redirect from short URL to original
 app.get('/api/shorturl/:short_url', catchErrors(redirectFromShortURL))
