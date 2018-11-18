@@ -15,12 +15,19 @@ const app = express()
 const port = process.env.PORT || 3000
 
 // Connect to database
-mongoose.connect(process.env.MONGOLAB_URI, { useMongoClient: true })
+mongoose.connect(
+  process.env.MONGOLAB_URI,
+  { useMongoClient: true }
+)
 const db = mongoose.connection
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', function () {
   console.log('Notice: db connected!')
 })
+
+//
+// Set up schema
+//
 
 const Schema = mongoose.Schema
 
@@ -39,8 +46,13 @@ const UrlSchema = new Schema({
 
 UrlSchema.pre('save', function (next) {
   const doc = this
-  // Use option upsert to create when non-existent and new to return seq value when created
-  Counter.findByIdAndUpdate({ _id: 'urlId' }, { $inc: { seq: 1 } }, { upsert: true, new: true })
+  // Use option upsert to create when non-existent and new to return seq value
+  // when created
+  Counter.findByIdAndUpdate(
+    { _id: 'urlId' },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
     .then(counter => {
       doc.short_url = counter.seq
       next()
@@ -50,13 +62,13 @@ UrlSchema.pre('save', function (next) {
 
 const Url = mongoose.model('Url', UrlSchema)
 
-const lookupAsync = promisify(dns.lookup)
-
 app.use(cors())
 
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/public', express.static(process.cwd() + '/public'))
+
+const lookupAsync = promisify(dns.lookup)
 
 // Default error handler for express handlers
 // Wes Bos: https://www.youtube.com/watch?v=DwQJ_NPQWWo
@@ -90,9 +102,11 @@ const validateUrl = async (req, res, next) => {
   const urlParsed = url.parse(req.body.url)
 
   // Check for valid protocol and that it has a hostname
-  if (!['http:', 'https:'].includes(urlParsed.protocol) ||
-    !urlParsed.hostname) {
-    return res.json({ 'error': 'invalid URL' })
+  if (
+    !['http:', 'https:'].includes(urlParsed.protocol) ||
+    !urlParsed.hostname
+  ) {
+    return res.json({ error: 'invalid URL' })
   }
 
   // Check hostname can be resolved
@@ -113,8 +127,7 @@ const addUrl = async (req, res, next) => {
   const query = { original_url: req.body.url }
 
   // Create new URL doc
-  await new Url(query)
-    .save()
+  await new Url(query).save()
 
   next()
 }
