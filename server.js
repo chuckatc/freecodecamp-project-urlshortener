@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const dns = require('dns')
 const { promisify } = require('util')
+const url = require('url')
 
 const app = express()
 
@@ -86,8 +87,7 @@ const respondWithExisting = async (req, res, next) => {
 
 const validateUrl = async (req, res, next) => {
   // Validate provided URL
-  var url = require('url')
-  var urlParsed = url.parse(req.body.url)
+  const urlParsed = url.parse(req.body.url)
 
   // Check for valid protocol and that it has a hostname
   if (!['http:', 'https:'].includes(urlParsed.protocol) ||
