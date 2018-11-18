@@ -71,22 +71,17 @@ app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html')
 })
 
-// Short URL creation
-app.post('/api/shorturl/new', respondWithExisting, megaHandler, respondWithExisting)
-
-function respondWithExisting (req, res, next) {
+// Respond with existing short and long URL if long is found
+const respondWithExisting = async (req, res, next) => {
   const query = { original_url: req.body.url }
-  Url.findOne(query)
-    .then(data => {
-      if (data) {
-        return res.json({
-          original_url: data.original_url,
-          short_url: data.short_url
-        })
-      }
-      next()
+  const data = await Url.findOne(query)
+  if (data) {
+    return res.json({
+      original_url: data.original_url,
+      short_url: data.short_url
     })
-    .catch(next)
+  }
+  next()
 }
 
 function megaHandler (req, res, next) {
@@ -139,10 +134,18 @@ function megaHandler (req, res, next) {
 
 // Redirect from short URL to original
 const redirectFromShortURL = async (req, res, next) => {
-  const data = await Url.findOne({ short_url: req.params.short_url }, 'original_url')
-  if (!data) { return res.json({ error: 'No short url found for given input' }) }
+  const data = await Url.findOne(
+    { short_url: req.params.short_url },
+    'original_url'
+  )
+  if (!data) {
+    return res.json({ error: 'No short url found for given input' })
+  }
   return res.redirect(data.original_url)
 }
+
+// Short URL creation
+app.post('/api/shorturl/new', respondWithExisting, megaHandler, respondWithExisting)
 
 // Redirect from short URL to original
 app.get('/api/shorturl/:short_url', catchErrors(redirectFromShortURL))
